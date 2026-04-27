@@ -19,7 +19,6 @@
             height: 100vh;
         }
 
-        /* 顶部标题栏 */
         .header {
             background: linear-gradient(135deg, #1677ff, #69b1ff);
             color: white;
@@ -30,7 +29,6 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
 
-        /* 聊天框主体 */
         .chat-container {
             flex: 1;
             overflow-y: auto;
@@ -41,7 +39,6 @@
             box-shadow: 0 2px 12px rgba(0,0,0,0.05);
         }
 
-        /* 消息气泡样式 */
         .message {
             margin-bottom: 16px;
             display: flex;
@@ -72,7 +69,6 @@
             border-bottom-left-radius: 4px;
         }
 
-        /* 输入区域 */
         .input-area {
             display: flex;
             gap: 10px;
@@ -110,7 +106,6 @@
             cursor: not-allowed;
         }
 
-        /* 加载动画 */
         .loading {
             display: inline-block;
             width: 20px;
@@ -142,7 +137,6 @@
         const userInput = document.getElementById('userInput');
         const sendBtn = document.getElementById('sendBtn');
 
-        // 按回车发送消息
         userInput.addEventListener('keydown', function(e) {
             if (e.key === 'Enter') sendMessage();
         });
@@ -151,48 +145,36 @@
             const message = userInput.value.trim();
             if (!message) return;
 
-            // 1. 添加用户消息
             addMessage(message, 'user');
             userInput.value = '';
             sendBtn.disabled = true;
 
-            // 2. 添加AI加载动画
             const loadingId = addLoading();
 
             try {
-                // 3. 请求后端接口
-                const response = await fetch('/chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: message })
-                });
+                // ✅ 这是修复后的正确请求方式，和你的后端完全匹配
+                const response = await fetch(`/chat?msg=${encodeURIComponent(message)}`);
                 const data = await response.json();
                 
-                // 4. 移除加载动画，添加AI回复
                 removeLoading(loadingId);
                 addMessage(data.reply, 'bot');
             } catch (error) {
                 removeLoading(loadingId);
-                addMessage('抱歉，请求出错了，请稍后再试。', 'bot');
+                addMessage('抱歉，服务开小差了，请稍后再试~', 'bot');
             } finally {
                 sendBtn.disabled = false;
             }
 
-            // 自动滚动到底部
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
-        // 添加消息到聊天框
         function addMessage(text, role) {
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${role}-message`;
-            messageDiv.innerHTML = `
-                <div class="message-bubble">${text}</div>
-            `;
+            messageDiv.innerHTML = `<div class="message-bubble">${text}</div>`;
             chatContainer.appendChild(messageDiv);
         }
 
-        // 添加加载动画
         function addLoading() {
             const loadingDiv = document.createElement('div');
             loadingDiv.className = 'message bot-message';
@@ -206,7 +188,6 @@
             return loadingDiv.id;
         }
 
-        // 移除加载动画
         function removeLoading(id) {
             const loading = document.getElementById(id);
             if (loading) loading.remove();
