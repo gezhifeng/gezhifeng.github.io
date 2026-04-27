@@ -1,30 +1,25 @@
 import os
-from fastapi import FastAPI, Request
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse
 from openai import OpenAI
+from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
-app.mount("/static", StaticFiles(directory="static"), name="static")
 
-api_key = os.getenv("DASHSCOPE_API_KEY")
+# 直接写死密钥，绕过环境变量！！！
 client = OpenAI(
-    api_key=api_key,
+    api_key="sk-6937850a78b34ac5acb8bd6920bfd2d1",
     base_url="https://dashscope.aliyuncs.com/compatible-mode/v1"
 )
 
 @app.get("/", response_class=HTMLResponse)
-async def home():
-    with open("static/index.html", "r", encoding="utf-8") as f:
-        return f.read()
+def root():
+    return open("index1.html", encoding="utf-8").read()
 
-@app.post("/chat")
-async def chat(request: Request):
-    data = await request.json()
-    msg = data.get("message", "")
-    
-    response = client.chat.completions.create(
+@app.get("/chat")
+def chat(msg: str):
+    completion = client.chat.completions.create(
         model="qwen-turbo",
         messages=[{"role": "user", "content": msg}]
     )
-    return {"reply": response.choices[0].message.content}
+    return {"reply": completion.choices[0].message.content}
