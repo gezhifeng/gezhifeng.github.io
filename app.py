@@ -14,7 +14,7 @@ client = OpenAI(
 
 @app.get("/", response_class=HTMLResponse)
 def root():
-    return open("index1.html", encoding="utf-8").read()
+    return open("index.html", encoding="utf-8").read()
 
 @app.get("/chat")
 def chat(msg: str):
